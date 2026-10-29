@@ -9,10 +9,10 @@ type Props = {
 
 export function LembreteItem({lembrete}:Props) {
     return (
-        <Link href={`/lembrete/${lembrete.lembreteId}`} asChild >
+        <Link href={`/lembrete/${lembrete.LembreteId}`} asChild >
         <Pressable style={styles.container}>
-                <Text style={styles.lembreteTitle}>{lembrete.tituloLembrete}</Text>
-                <Switch trackColor={{ false: "#767577", true: "#81b0ff" }} value={lembrete.statusLembrete} />
+                <Text style={styles.lembreteTitle}>{lembrete.TituloLembrete}</Text>
+                <Switch trackColor={{ false: "#767577", true: "#81b0ff" }} value={lembrete.StatusLembrete.toString()==='0'?false:true} />
             </Pressable>
         </Link>
     );

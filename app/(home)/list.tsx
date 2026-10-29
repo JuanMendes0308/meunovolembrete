@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, View, FlatList, ActivityIndicator } from "react-native";
 import { LembreteItem } from "../../components/lembreteItem/lembreteItem";
-import { getAllLembretesByAPI } from "../../services/lembrete";
+import { getAllLembreteByAPI } from "../../services/lembrete";
  
 export default function ListScreen() {
   const [meusLembretes, setMeusLembretes] = useState<any[]>([]);
@@ -10,7 +10,7 @@ export default function ListScreen() {
   useEffect(() => {
     async function carregarLembretes() {
       try {
-        const dados = await getAllLembretesByAPI();
+        const dados = await getAllLembreteByAPI();
         setMeusLembretes(dados);
       } catch (error) {
         console.error("Erro ao carregar dados na lista:", error);
@@ -20,7 +20,9 @@ export default function ListScreen() {
     }
  
     carregarLembretes();
-  }, []);
+  }, [meusLembretes]);
+
+
  
   if (loading) {
     return (
@@ -36,7 +38,7 @@ export default function ListScreen() {
  
       <FlatList
         data={meusLembretes}
-        keyExtractor={(item) => item.lembreteId.toString()}
+        keyExtractor={(item) => item.LembreteId.toString()}
         renderItem={({ item }) => (
           <LembreteItem lembrete={item} />
         )}

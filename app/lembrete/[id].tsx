@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { Button } from '../../components/button/button'
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { Lembrete } from '../../types/lembrete';
-import { getLembreteById } from '../../services/lembrete'
+import { getLembretesByIdByAPI } from '../../services/lembrete'
  
 export default function LembreteEditScreen() {
  
@@ -12,27 +12,29 @@ const { id} = useLocalSearchParams();
 const idLembrete = parseInt(id as string);
 const [lembrete,setLembrete] = useState<Lembrete>();
 const [titulo, setTitulo] = useState<string>('');
-const [corpo, setCorpo] = useState<string>('');
+const [descricao, setDescricao] = useState<string>('');
 const [status, setStatus] = useState<boolean>(false);
 
 useEffect(() => {
+    async function getLembreteById(idLembrete:number){
     if (idLembrete){
-    const dadosLembrete = getLembreteById(idLembrete);
+    const dadosLembrete = await getLembretesByIdByAPI(idLembrete);
     setLembrete(dadosLembrete);    
-}}, [idLembrete]);
+}}getLembreteById(idLembrete);
+}, [idLembrete]);
 
 useEffect(() => {
     if (lembrete) {
-        setTitulo(lembrete.tituloLembrete || '');
-        setCorpo(lembrete.corpoLembrete || '');
-        setStatus(lembrete.statusLembrete || false);
+        setTitulo(lembrete.TituloLembrete || '');
+        setDescricao(lembrete.DescricaoLembrete || '');
+        setStatus(lembrete.StatusLembrete || false);
     }
 }, [lembrete]);
  
  
 return (
         <View style={styles.container}>
-            <Stack.Screen options={{ title: lembrete?.tituloLembrete }} />
+            <Stack.Screen options={{ title: lembrete?.TituloLembrete }} />
             <View style={styles.lembreteArea}>
  
                 <View style={styles.detailsArea}>
@@ -51,8 +53,8 @@ return (
                         numberOfLines={6}
                         maxLength={60}
                         // onChangeText={text => onChangeText(text)}
-                        onChangeText={setCorpo}
-                        value={corpo}
+                        onChangeText={setDescricao}
+                        value={descricao}
                         style={styles.input}
                     />
                     <View style={styles.switchArea}>

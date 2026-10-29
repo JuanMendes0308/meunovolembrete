@@ -7,10 +7,31 @@ import {
     StyleSheet,
     Alert
 } from 'react-native';
+import { criarLembrete } from '../../services/lembrete';
+import { Lembrete } from '../../types/lembrete';
+import { router } from 'expo-router';
 
 export default function Add() {
-    const [titulo, setTitulo] = useState('');
-    const [descricao, setDescricao] = useState('');
+    const [titulo, setTitulo] = useState<string>('');
+    const [descricao, setDescricao] = useState<string>('');
+    const [status, setStatus] = useState<boolean>(false);
+
+    async function handleLembreteAdd(){
+                console.log(titulo + " " + descricao + " " + status.toString());
+        try {
+            const novoLembrete: Omit<Lembrete, 'LembreteId'>= {
+                "TituloLembrete":titulo,
+                "DescricaoLembrete":descricao,
+                "StatusLembrete":status
+            };
+            await criarLembrete(novoLembrete);
+            Alert.alert('Sucesso', 'Lembrete criado com sucesso!');
+            router.replace('/(home)/list');
+        } catch (error) {
+            console.log(error);
+            Alert.alert('Erro', 'Não foi possível criar o lembrete.' + error);
+        }
+    };
 
     function adicionarLembrete() {
         if (titulo.trim() === '' || descricao.trim() === '') {
@@ -50,7 +71,7 @@ export default function Add() {
 
             <TouchableOpacity
                 style={styles.botao}
-                onPress={adicionarLembrete}
+                onPress={handleLembreteAdd}
             >
                 <Text style={styles.textoBotao}>ADICIONAR</Text>
             </TouchableOpacity>

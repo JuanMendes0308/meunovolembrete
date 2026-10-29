@@ -6,46 +6,46 @@ type Lembretes = {
 export const lembreteDados: Lembretes = {
     lembretes: [
         {
-            lembreteId: 1,
-            tituloLembrete: 'Pagar',
-            corpoLembrete: 'Pagar conta de luz ref AGO25',
-            statusLembrete: false
+            LembreteId: 1,
+            TituloLembrete: 'Pagar',
+            DescricaoLembrete: 'Pagar conta de luz ref AGO25',
+            StatusLembrete: false
         },
         {
-            lembreteId: 2,
-            tituloLembrete: 'Comprar',
-            corpoLembrete: 'Comprar comida para o mês',
-            statusLembrete: true
+            LembreteId: 2,
+            TituloLembrete: 'Comprar',
+            DescricaoLembrete: 'Comprar comida para o mês',
+            StatusLembrete: true
         },
         {
-            lembreteId: 3,
-            tituloLembrete: 'Comprar',
-            corpoLembrete: 'Comprar presente do dia dos namorados',
-            statusLembrete: false
+            LembreteId: 3,
+            TituloLembrete: 'Comprar',
+            DescricaoLembrete: 'Comprar presente do dia dos namorados',
+            StatusLembrete: false
         },
         {
-            lembreteId: 4,
-            tituloLembrete: 'Carro',
-            corpoLembrete: 'Levar carro para revisão',
-            statusLembrete: true
+            LembreteId: 4,
+            TituloLembrete: 'Carro',
+            DescricaoLembrete: 'Levar carro para revisão',
+            StatusLembrete: true
         },
         {
-            lembreteId: 5,
-            tituloLembrete: 'Pagar',
-            corpoLembrete: 'Pagar condomínio ref AGO25 ',
-            statusLembrete: false
+            LembreteId: 5,
+            TituloLembrete: 'Pagar',
+            DescricaoLembrete: 'Pagar condomínio ref AGO25 ',
+            StatusLembrete: false
         },
         {
-            lembreteId: 6,
-            tituloLembrete: 'Estudar',
-            corpoLembrete: 'Estudar RN 1h por dia ',
-            statusLembrete: true
+            LembreteId: 6,
+            TituloLembrete: 'Estudar',
+            DescricaoLembrete: 'Estudar RN 1h por dia ',
+            StatusLembrete: true
         },
         {
-            lembreteId: 7,
-            tituloLembrete: 'Carro',
-            corpoLembrete: 'Abastecer o carro',
-            statusLembrete: false
+            LembreteId: 7,
+            TituloLembrete: 'Carro',
+            DescricaoLembrete: 'Abastecer o carro',
+            StatusLembrete: false
         }
     ]
 }
