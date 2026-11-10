@@ -20,7 +20,7 @@ export default function Page() {
  
       <Pressable
   style={styles.button}
-  onPress={() => router.replace("/list")}
+  onPress={() => router.replace("/home")}
 >
   <Text style={styles.buttonText}>ENTER</Text>
 </Pressable>

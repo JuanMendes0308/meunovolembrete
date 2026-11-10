@@ -2,6 +2,10 @@
   "expo": {
     "name": "meunovolembrete",
     "slug": "meunovolembrete",
+     "scheme": "your-app-scheme",
+    "experiments": {
+      "typedRoutes": true
+    },
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

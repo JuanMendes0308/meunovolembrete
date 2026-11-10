@@ -1,10 +1,12 @@
 import { Stack } from "expo-router";
- 
-export default function RootLayout(){
-    return(
-        <Stack screenOptions={{ headerShown: true }}>
+
+export default function RootLayout() {
+    return (
+        <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="index" />
-            <Stack.Screen name="home" />
+            <Stack.Screen name="(home)" />
+            <Stack.Screen name="add" />
+            <Stack.Screen name="lembrete/[id]" />
         </Stack>
-    )
+    );
 }

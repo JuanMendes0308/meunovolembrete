@@ -1,134 +1,114 @@
-import { StyleSheet, Text, SafeAreaView, View, TextInput, Switch, Alert } from 'react-native'
-import React, { useEffect, useState } from 'react'
-import { Button } from '../../components/button/button'
-import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { Lembrete } from '../../types/lembrete';
-import { getLembretesByIdByAPI } from '../../services/lembrete'
- 
-export default function LembreteEditScreen() {
- 
-// AQUI o código que lê o parâmetro id e atualiza a tela através dos hooks
-const { id} = useLocalSearchParams();
-const idLembrete = parseInt(id as string);
-const [lembrete,setLembrete] = useState<Lembrete>();
-const [titulo, setTitulo] = useState<string>('');
-const [descricao, setDescricao] = useState<string>('');
-const [status, setStatus] = useState<boolean>(false);
+import { useEffect, useState } from "react";
+import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { router, useLocalSearchParams } from "expo-router";
+import { Header } from "../../components/header/header";
+import { LembreteForm } from "../../components/lembreteForm/lembreteForm";
+import { atualizarLembrete, excluirLembrete, getLembretesByIdByAPI } from "../../services/lembrete";
+import { Lembrete, LembreteInput } from "../../types/lembrete";
+import { cores } from "../../constants/cores";
 
-useEffect(() => {
-    async function getLembreteById(idLembrete:number){
-    if (idLembrete){
-    const dadosLembrete = await getLembretesByIdByAPI(idLembrete);
-    setLembrete(dadosLembrete);    
-}}getLembreteById(idLembrete);
-}, [idLembrete]);
+export default function EditarLembreteScreen() {
+    const { id } = useLocalSearchParams<{ id: string }>();
+    const idLembrete = parseInt(id as string);
+    const [lembrete, setLembrete] = useState<Lembrete>();
+    const [erro, setErro] = useState(false);
 
-useEffect(() => {
-    if (lembrete) {
-        setTitulo(lembrete.TituloLembrete || '');
-        setDescricao(lembrete.DescricaoLembrete || '');
-        setStatus(lembrete.StatusLembrete || false);
+    useEffect(() => {
+        getLembretesByIdByAPI(idLembrete).then(setLembrete).catch(() => setErro(true));
+    }, [idLembrete]);
+
+    async function salvar(dados: LembreteInput) {
+        try {
+            await atualizarLembrete(idLembrete, dados);
+            router.back();
+        } catch (error) {
+            Alert.alert("Erro", "Não foi possível salvar o lembrete. " + error);
+        }
     }
-}, [lembrete]);
- 
- 
-return (
+
+    function confirmarExclusao() {
+        Alert.alert("Excluir", "Deseja excluir este lembrete?", [
+            { text: "Não", style: "cancel" },
+            {
+                text: "Excluir",
+                style: "destructive",
+                onPress: async () => {
+                    try {
+                        await excluirLembrete(idLembrete);
+                        router.back();
+                    } catch (error) {
+                        Alert.alert("Erro", "Não foi possível excluir o lembrete. " + error);
+                    }
+                },
+            },
+        ]);
+    }
+
+    const lixeira = (
+        <Pressable style={styles.lixeira} onPress={confirmarExclusao} hitSlop={8}>
+            <Ionicons name="trash-outline" size={28} color="#fff" />
+        </Pressable>
+    );
+
+    return (
         <View style={styles.container}>
-            <Stack.Screen options={{ title: lembrete?.TituloLembrete }} />
-            <View style={styles.lembreteArea}>
- 
-                <View style={styles.detailsArea}>
- 
-                    <Text style={styles.title}>Título</Text>
-                    <TextInput
-                        style={styles.input}
-                        onChangeText={setTitulo}
-                        value={titulo}
-                        textAlign='center'
-                    />
-                    <Text style={styles.description}>Descrição</Text>
-                    <TextInput
-                        editable={true}
-                        multiline={true}
-                        numberOfLines={6}
-                        maxLength={60}
-                        // onChangeText={text => onChangeText(text)}
-                        onChangeText={setDescricao}
-                        value={descricao}
-                        style={styles.input}
-                    />
-                    <View style={styles.switchArea}>
-                        <Text>Não Concluída</Text>
-                        <Switch
-                            trackColor={{ false: '#767577', true: '#81b0ff' }}
-                            value={status}
-                            onValueChange={setStatus}
-                        // thumbColor={isEnabled ? '#f5dd4b' : '#f4f3f4'}
-                        // ios_backgroundColor="#3e3e3e"                        
-                        // value={isEnabled}
-                        />
-                        <Text>Concluída</Text>
-                    </View>
-                </View>
-            </View>
-            <View style={styles.buttonArea}>
-                <Button title="Salvar" onPress={() => alert('Lembrete salvo!')} />
-                <Button title="Excluir" onPress={() => alert('Lembrete excluído!')} />
-            </View>
+            <Header direita={lixeira} />
+            <ScrollView contentContainerStyle={styles.conteudo} keyboardShouldPersistTaps="handled">
+                <Text style={styles.titulo}>EDITAR LEMBRETE</Text>
+
+                {!lembrete && !erro && <ActivityIndicator size="large" color={cores.texto} />}
+                {erro && <Text style={styles.erro}>Lembrete não encontrado.</Text>}
+
+                {lembrete && (
+                    <LembreteForm inicial={lembrete} onSubmit={salvar}>
+                        {(enviar) => (
+                            <>
+                                <Pressable style={[styles.lixeira, styles.lixeiraCentro]} onPress={confirmarExclusao}>
+                                    <Ionicons name="trash-outline" size={28} color="#fff" />
+                                </Pressable>
+
+                                <View style={styles.botoes}>
+                                    <Pressable style={[styles.botao, { backgroundColor: cores.cancelar }]} onPress={() => router.back()}>
+                                        <Ionicons name="close" size={26} color="#fff" />
+                                        <Text style={styles.botaoTexto}>Cancel</Text>
+                                    </Pressable>
+                                    <Pressable style={[styles.botao, { backgroundColor: cores.ok }]} onPress={enviar}>
+                                        <Text style={styles.botaoTexto}>OK</Text>
+                                    </Pressable>
+                                </View>
+                            </>
+                        )}
+                    </LembreteForm>
+                )}
+            </ScrollView>
         </View>
-    )
+    );
 }
- 
+
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "#d2e0f9"
-    },
-    lembreteArea: {
-        flex: 1,
-        padding: 20,
-        marginTop: 64
-    },
-    buttonArea: {
-        padding: 20,
-        flexDirection: "row",
-        gap: 32,
+    container: { flex: 1, backgroundColor: cores.fundo },
+    conteudo: { padding: 24, paddingBottom: 48 },
+    titulo: { fontSize: 28, fontWeight: "800", textAlign: "center", marginVertical: 24, color: cores.texto },
+    erro: { textAlign: "center", color: cores.excluir },
+    lixeira: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        backgroundColor: cores.excluir,
         justifyContent: "center",
         alignItems: "center",
-        paddingBottom: 64
     },
-    switchArea: {
+    lixeiraCentro: { alignSelf: "center", marginTop: 24 },
+    botoes: { flexDirection: "row", gap: 16, marginTop: 24 },
+    botao: {
+        flex: 1,
+        height: 52,
+        borderRadius: 26,
         flexDirection: "row",
         justifyContent: "center",
         alignItems: "center",
-        gap: 32
+        gap: 8,
     },
-    detailsArea: {
-        width: "100%",
-        justifyContent: 'center',
-        alignItems: "center",
-        color: "#E67A31",
-        borderStyle: 'solid',
-        borderWidth: 1,
-        borderColor: "#4294E7",
-        borderRadius: 10,
-        padding: 20,
-        gap: 16,
-        backgroundColor: "#fff"
-    },
-    title: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        color: "#4294E7"
-    },
-    description: {
-        fontSize: 20
-    },
- 
-    input: {
-        width: "100%",
-        margin: 12,
-        borderWidth: 1,
-        padding: 6
-    }
-})
+    botaoTexto: { color: "#fff", fontSize: 22, fontWeight: "800" },
+});

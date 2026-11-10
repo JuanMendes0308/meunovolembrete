@@ -1,69 +1,66 @@
-import { lembreteDados } from "../data/lembreteDados";
-import { Lembrete } from "../types/lembrete";
+import { Lembrete, LembreteInput } from "../types/lembrete";
 
+// Endereço da API PHP (pasta "api" no servidor). Troque pelo IP/host da sua máquina.
 const URL = "http://10.59.47.22/api/Lembrete";
 
-export function getAllLembretes() {
-    return lembreteDados.lembretes;
+// O MySQL/PDO pode devolver tinyint como "0"/"1": normaliza tudo para o tipo do app
+function normalizar(item: any): Lembrete {
+    return {
+        LembreteId: Number(item.LembreteId),
+        TituloLembrete: item.TituloLembrete ?? '',
+        DescricaoLembrete: item.DescricaoLembrete ?? '',
+        DataLembrete: item.DataLembrete ?? null,
+        HorarioLembrete: item.HorarioLembrete ? String(item.HorarioLembrete).slice(0, 5) : null,
+        DiarioLembrete: Boolean(Number(item.DiarioLembrete)),
+        StatusLembrete: Boolean(Number(item.StatusLembrete)),
+    };
 }
 
-// export async function getAllLembretesByAPI() {
-//     try {
-//         const response = await fetch(URL);
-        
-//         if (!response.ok) {
-//             throw new Error('Erro na requisição: $(response.status)');
-//         }
-
-//         const dados = await response.json();
-//         return dados.map((item: any) =>({
-//             LembreteId: item.lembreteId,
-//             TituloLembrete: item.tituloLembrete,
-//             DescricaoLembrete: item.descricaoLembrete,
-//             StatusLembrete: item.statusLembrete
-//         }));
-//     } catch (error) {
-//         console.error('Erro ao buscar lembretes:', error);
-//         return [];
-//         };
-// }
-
-export function getLembreteById(pId: number) {
-    return lembreteDados.lembretes.find(item => item.LembreteId === pId);
+async function verificar(response: Response, mensagem: string) {
+    if (!response.ok) {
+        throw new Error(`${mensagem} (${response.status})`);
+    }
 }
 
-export async function getAllLembreteByAPI(): Promise<Lembrete[]>{
+function cabecalhos() {
+    return { 'Content-Type': 'application/json' };
+}
+
+export async function getAllLembreteByAPI(): Promise<Lembrete[]> {
     const response = await fetch(URL);
+    await verificar(response, 'Erro ao listar lembretes');
     const json = await response.json();
-    console.log(json);
-    return json;
+    return json.map(normalizar);
 }
 
-export async function getLembretesByIdByAPI(pId:number): Promise<Lembrete>{
+export async function getLembretesByIdByAPI(pId: number): Promise<Lembrete> {
     const response = await fetch(`${URL}/${pId}`);
-    const json = await response.json();
-    console.log(json);
-    return json;
+    await verificar(response, 'Erro ao buscar lembrete');
+    return normalizar(await response.json());
 }
 
-export async function criarLembrete(lembrete:Omit<Lembrete, 'LembreteId'>) {
-  const lembreteUnico = {
-    "TituloLembrete": lembrete.TituloLembrete,
-    "DescricaoLembrete": lembrete.DescricaoLembrete,
-    "StatusLembrete": lembrete.StatusLembrete
-  };
-  const response = await fetch(URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(lembreteUnico)
-  });
-  if (!response.ok) {
-    throw new Error(`Erro ao criar o lembrete`+response.statusText);
-  }
- 
-  console.log(response.json());
-  return response.json();
+export async function criarLembrete(lembrete: LembreteInput) {
+    const response = await fetch(URL, {
+        method: 'POST',
+        headers: cabecalhos(),
+        body: JSON.stringify(lembrete),
+    });
+    await verificar(response, 'Erro ao criar o lembrete');
+    return response.json();
 }
- 
+
+export async function atualizarLembrete(id: number, lembrete: LembreteInput) {
+    const response = await fetch(`${URL}/${id}`, {
+        method: 'PUT',
+        headers: cabecalhos(),
+        body: JSON.stringify(lembrete),
+    });
+    await verificar(response, 'Erro ao atualizar o lembrete');
+    return response.json();
+}
+
+export async function excluirLembrete(id: number) {
+    const response = await fetch(`${URL}/${id}`, { method: 'DELETE' });
+    await verificar(response, 'Erro ao excluir o lembrete');
+    return response.json();
+}

@@ -1,157 +1,62 @@
-import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View, FlatList, ActivityIndicator } from "react-native";
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { router, useLocalSearchParams } from "expo-router";
+import { Header } from "../../components/header/header";
+import { FiltroCard } from "../../components/filtroCard/filtroCard";
 import { LembreteItem } from "../../components/lembreteItem/lembreteItem";
-import { getAllLembreteByAPI } from "../../services/lembrete";
- 
+import { useLembretes } from "../../hooks/useLembretes";
+import { filtrar } from "../../utils/data";
+import { cores } from "../../constants/cores";
+import { Filtro } from "../../types/lembrete";
+
 export default function ListScreen() {
-  const [meusLembretes, setMeusLembretes] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
- 
-  useEffect(() => {
-    async function carregarLembretes() {
-      try {
-        const dados = await getAllLembreteByAPI();
-        setMeusLembretes(dados);
-      } catch (error) {
-        console.error("Erro ao carregar dados na lista:", error);
-      } finally {
-        setLoading(false);
-      }
+    const { filtro } = useLocalSearchParams<{ filtro?: Filtro }>();
+    const ativo = filtro && filtro !== "todos" ? filtro : null;
+    const { lembretes, loading, erro, alternarStatus } = useLembretes();
+
+    // Tocar no card ativo remove o filtro
+    function alternar(f: Filtro) {
+        router.setParams({ filtro: ativo === f ? "todos" : f });
     }
- 
-    carregarLembretes();
-  }, [meusLembretes]);
 
+    const lista = filtrar(lembretes, ativo);
 
- 
-  if (loading) {
     return (
-      <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
-        <ActivityIndicator size="large" color="#0056FF" />
-      </View>
+        <View style={styles.container}>
+            <Header criar />
+            <ScrollView contentContainerStyle={styles.conteudo}>
+                <Text style={styles.titulo}>Minha Lista</Text>
+
+                <View style={styles.linhaCards}>
+                    <FiltroCard titulo="HOJE" ativo={ativo === "hoje"} imagem={require("../../assets/icon-hoje.png")} onPress={() => alternar("hoje")} />
+                    <FiltroCard titulo="PROGRAMADOS" ativo={ativo === "programados"} imagem={require("../../assets/icon-programados.png")} onPress={() => alternar("programados")} />
+                </View>
+                <View style={styles.linhaCards}>
+                    <FiltroCard titulo="TODOS" ativo={!ativo} imagem={require("../../assets/icon-todos.png")} onPress={() => router.setParams({ filtro: "todos" })} />
+                    <FiltroCard titulo="DIÁRIOS" ativo={ativo === "diarios"} imagem={require("../../assets/icon-diarios.png")} onPress={() => alternar("diarios")} />
+                </View>
+
+                {loading && <ActivityIndicator size="large" color={cores.texto} />}
+                {!!erro && <Text style={styles.erro}>{erro}</Text>}
+                {!loading && !erro && lista.length === 0 && (
+                    <Text style={styles.vazio}>Nenhum lembrete aqui.</Text>
+                )}
+
+                <View style={styles.lista}>
+                    {lista.map(l => (
+                        <LembreteItem key={l.LembreteId} lembrete={l} onToggle={alternarStatus} />
+                    ))}
+                </View>
+            </ScrollView>
+        </View>
     );
-  }
- 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Meus Lembretes</Text>
- 
-      <FlatList
-        data={meusLembretes}
-        keyExtractor={(item) => item.LembreteId.toString()}
-        renderItem={({ item }) => (
-          <LembreteItem lembrete={item} />
-        )}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-      />
-    </View>
-  );
 }
- 
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f5f5f5",
-    paddingTop: 50,
-    paddingHorizontal: 20,
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 20,
-  },
-  listContent: {
-    paddingBottom: 20,
-  },
+    container: { flex: 1, backgroundColor: cores.fundo },
+    conteudo: { padding: 24, paddingBottom: 16, gap: 18 },
+    titulo: { fontSize: 36, fontWeight: "800", textAlign: "center", color: cores.texto },
+    linhaCards: { flexDirection: "row", gap: 28 },
+    lista: { gap: 16 },
+    erro: { textAlign: "center", color: cores.excluir },
+    vazio: { textAlign: "center", color: "#666" },
 });
- 
- 
- 
-/*
- 
-import React from "react";
-import { StyleSheet, Text, View, FlatList } from "react-native";
-import LembreteItem from "../../lembreteItem/lembreteItem";
-import { getAllLembretes } from "../../service/lembrete";
- 
-export default function ListScreen() {
- 
-  const meusLembretes = getAllLembretes();
- 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Meus Lembretes</Text>
- 
-     
-      <FlatList
-        data={meusLembretes}
-        keyExtractor={(item) => item.lembreteId.toString()}
-        renderItem={({ item }) => (
-         
-          <LembreteItem lembrete={item} />
-        )}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-      />
-    </View>
-  );
-}
- 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f5f5f5",
-    paddingTop: 50,
-    paddingHorizontal: 20,
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 20,
-  },
-  listContent: {
-    paddingBottom: 20,
-  },
-});
- 
-\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
- 
- 
-import { StyleSheet, FlatList, View } from 'react-native';
- 
-import { LembreteItem } from '../../components/lembreteItem/lembreteItem';
- 
-import { getAllLembretes } from '../../data/lembretes';
- 
-export default function List() {
-  const lembretes = getAllLembretes(); // 1. Definição correta da constante
- 
-  return (
-    <View style={styles.container}>
-      <FlatList
-        data={lembretes} // CORRIGIDO: Passando a variável correta
-        renderItem={({ item }) => <LembreteItem lembrete={item} />} // CORRIGIDO: Usando o componente importado
-        keyExtractor={item => item.lembreteId.toString()}
-        style={styles.list}
-      />
-    </View>
-  );
-}
- 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingTop: 40,
-  },
-  list: {
-    width: "100%",
-    padding: 16,
-    // 3. CORRIGIDO: fontSize removido daqui por ser inválido para FlatList
-  }
-});
-*/
- 
- 
